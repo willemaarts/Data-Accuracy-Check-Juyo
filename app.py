@@ -246,5 +246,5 @@ with st.container():
         date_XML = date_time_obj.date()
         date_last = date_time_obj2.date()
 
-    if date_JUYO == date_XML:
-        if st.button('Start check'): run_check()
+        if date_JUYO == date_XML:
+            if st.button('Start check'): run_check()
