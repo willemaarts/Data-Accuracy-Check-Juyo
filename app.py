@@ -248,3 +248,10 @@ with st.container():
 
         if date_JUYO == date_XML:
             if st.button('Start check'): run_check()
+        else:
+            st.warning(f'''
+                ##### The dates the first row of both the files needs to be the same.
+                ###### JUYO file = {date_JUYO} | XML file = {date_XML}\\
+                Make sure that on the first row, both the dates are the same.
+                ''', 
+                icon='⚠️')
