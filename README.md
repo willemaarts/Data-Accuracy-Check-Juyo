@@ -5,11 +5,11 @@ Standard Operating Procedure for Data Accuracy
 1. Download or obtain the XML file from the database of the current day.
 2. Obtain the "Exploration by Day" data by following these steps:
 
-a. Determine the start day of the XML file by subtracting 10 days from the current day. For example, if the current day is 14/12/2022, the start day of the XML file is 04/12/2022.
+    a. Determine the start day of the XML file by subtracting 10 days from the current day. For example, if the current day is 14/12/2022, the start day of the XML file is 04/12/2022.
 
-b. In juyo, set the calendar to 04/12/2022 + 4 months in the future.
+    b. In juyo, set the calendar to 04/12/2022 + 4 months in the future.
 
-c. Download the Excel (xlsx) data from juyo.
+    c. Download the Excel (xlsx) data from juyo.
 
 3. On the left site, upload the Excel file.
 4. On the right site, upload the XML file.
