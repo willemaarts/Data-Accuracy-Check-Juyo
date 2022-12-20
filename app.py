@@ -7,6 +7,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import altair as alt
+import locale
 
 # emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
 im = Image.open('images/JUYOcon.ico')
@@ -84,9 +85,11 @@ def run_XML_transer():
         return
 
 def run_check():
-    with st.spinner('running process...'):
+    with st.spinner('running process...'): 
 
         try:
+            locale.setlocale(locale.LC_ALL, '') # Use '' for auto, or force e.g. to 'nl_NL.UTF-8' 
+
             element_path = ["CONSIDERED_DATE", "IND_DEDUCT_ROOMS", "GRP_DEDUCT_ROOMS", "IND_DEDUCT_REVENUE", "GRP_DEDUCT_REVENUE"]
             
             output = pd.DataFrame([JUYO_DF['date']]).transpose()
@@ -119,17 +122,17 @@ def run_check():
 
             with l_column:
                 st.subheader("🏨 Total discrepancies Rn's:")
-                st.metric("RN's",f'{total_rn:,}')
+                st.metric("RN's",f'{total_rn:n}')
 
             with m_column:
                 st.subheader("💲 Total discrepancies REV:")
-                st.metric("REV",f"€ {total_rev:,}") 
+                st.metric("REV",f"€ {total_rev:n}") 
 
             with r_column:
                 st.markdown('### 📝 Average accuracy:')
-                st.metric("Revenue accuracy",f"{mean_rev} %") 
+                st.metric("Revenue accuracy",f"{mean_rev:n} %") 
 
-                st.metric("OTB accuracy",f"{mean_OTB} %")
+                st.metric("OTB accuracy",f"{mean_OTB:n} %")
 
             source = pd.DataFrame({
                 'difference OTB': output['OTB_DIFF'],
@@ -180,10 +183,10 @@ def run_check():
         st.write(f'''
         The data accuracy of the period {date_JUYO} till {date_last} has been reviewed. 
         
-        A total of {total_rn:,} room night discrepancies and €{total_rev:,} in revenue were identified. 
+        A total of {total_rn:n} room night discrepancies and €{total_rev:n} in revenue were identified. 
         
-        The average revenue accuracy percentage for this period was {mean_rev}%, 
-        and the average OTB accuracy percentage was {mean_OTB}%.
+        The average revenue accuracy percentage for this period was {mean_rev:n}%, 
+        and the average OTB accuracy percentage was {mean_OTB:n}%.
         ''')
     
     with open("output.xlsx", "rb") as file:
