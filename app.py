@@ -119,11 +119,11 @@ def run_check():
 
             with l_column:
                 st.subheader("🏨 Total discrepancies Rn's:")
-                st.metric("RN's",total_rn)
+                st.metric("RN's",f'{total_rn:,}')
 
             with m_column:
                 st.subheader("💲 Total discrepancies REV:")
-                st.metric("REV",f"€ {total_rev}") 
+                st.metric("REV",f"€ {total_rev:,}") 
 
             with r_column:
                 st.markdown('### 📝 Average accuracy:')
@@ -140,13 +140,14 @@ def run_check():
             c = alt.Chart(source).mark_bar().encode(
                 x='date',
                 y='difference OTB',
-                tooltip=['difference OTB', 'date']
+                tooltip=['difference OTB', 'date', 'mean']
                 ) 
 
             rule = alt.Chart(source).mark_rule(color='red').encode(
-                y='mean(mean)'
+                alt.Y('mean(mean)',
+                    scale=alt.Scale(domain=(1, 100)))
                 )
-            
+
             f = alt.layer(c, rule).resolve_scale(y='independent')
 
             st.subheader('Difference by day')
@@ -172,7 +173,18 @@ def run_check():
             st.error(f'Err4: {exc_type}; {exc_obj}; ({str(e)}), line: {exc_tb.tb_lineno}, in {fname}')
             return
 
-    st.success('Data accuracy check done', icon='✅') 
+    st.success('Data accuracy check done', icon='✅')
+    
+    my_expander = st.expander(label='Expand me for text explanation for client')
+    with my_expander:
+        st.write(f'''
+        The data accuracy of the period {date_JUYO} till {date_last} has been reviewed. 
+        
+        A total of {total_rn:,} room night discrepancies and €{total_rev:,} in revenue were identified. 
+        
+        The average revenue accuracy percentage for this period was {mean_rev}%, 
+        and the average OTB accuracy percentage was {mean_OTB}%.
+        ''')
     
     with open("output.xlsx", "rb") as file:
         st.download_button(
@@ -212,6 +224,8 @@ with st.container():
     with left_column:
 
         st.header("Exploration By Day")
+        st.checkbox('Upload different file?', disabled=disabled)
+
         uploaded_file_JUYO = st.file_uploader("Upload JUYO file", type=".xlsx")
 
         if uploaded_file_JUYO:
@@ -224,11 +238,20 @@ with st.container():
         
         with right_column:
             st.header("XML file database")
-            uploaded_file_XML = st.file_uploader("Upload XML file", type=".XML")
+
+            type = st.checkbox('Upload a Excel file instead of XML file?')
+            
+            if type:
+                uploaded_file_XML = st.file_uploader("Upload XML file", type=".xlsx")
+            else:
+                uploaded_file_XML = st.file_uploader("Upload XML file", type=".XML")
 
             if uploaded_file_XML:
-
-                XML_DF = run_XML_transer()
+                
+                if type:
+                    XML_DF = pd.read_excel(uploaded_file_XML)
+                else:    
+                    XML_DF = run_XML_transer()
 
                 st.markdown("### Data preview; XML file")
                 st.dataframe(XML_DF.head())
