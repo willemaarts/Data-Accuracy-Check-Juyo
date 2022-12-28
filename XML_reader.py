@@ -1,5 +1,8 @@
+from xml.etree import ElementPath
 import pandas as pd
 import xml.etree.ElementTree as ET
+
+from app import JUYO_DF, XML_DF
 
 # parse the XML file
 tree = ET.parse('md_juyo_history_forecast_BELAMI_20221206_9560255_2022-12-06_070221.xml')
