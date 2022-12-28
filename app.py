@@ -91,12 +91,17 @@ def run_check():
             locale.setlocale(locale.LC_ALL, '') # Use '' for auto, or force e.g. to 'nl_NL.UTF-8' 
 
             element_path = ["CONSIDERED_DATE", "IND_DEDUCT_ROOMS", "GRP_DEDUCT_ROOMS", "IND_DEDUCT_REVENUE", "GRP_DEDUCT_REVENUE"]
+
+            if type_juyo:
+                type_path = ['category', 'OTB RN', 'OTB Rev']
+            else:
+                type_path = ['date', 'OTB', 'otb_rev']
             
-            output = pd.DataFrame([JUYO_DF['date']]).transpose()
-            output['date'] = pd.to_datetime(output['date'])
+            output = pd.DataFrame([JUYO_DF[f'{type_path[0]}']]).transpose()
+            output[f'{type_path[0]}'] = pd.to_datetime(output[f'{type_path[0]}'])
 
             output['OTB_XML'] = XML_DF[f'{element_path[1]}'] +  XML_DF[f'{element_path[2]}']
-            output['OTB_JUYO'] = JUYO_DF['OTB']
+            output['OTB_JUYO'] = JUYO_DF[f'{type_path[1]}']
             output['OTB_DIFF'] = abs(output['OTB_XML'] - output['OTB_JUYO'])
             
             output['OTB_%'] = output['OTB_XML'] / output['OTB_JUYO'] * 100
@@ -104,7 +109,7 @@ def run_check():
             output['OTB_%'] = np.where(output['OTB_%'] >= 100, output['OTB_JUYO'] / output['OTB_XML'] * 100, output['OTB_XML'] / output['OTB_JUYO'] * 100)
             
             output['REV_XML'] = abs(XML_DF[f'{element_path[3]}'] + XML_DF[f'{element_path[4]}'])
-            output['REV_JUYO'] = abs(JUYO_DF['otb_rev'])
+            output['REV_JUYO'] = abs(JUYO_DF[f'{type_path[2]}'])
             output['REV_DIFF'] = abs(output['REV_XML'] - output['REV_JUYO'])
 
             output['REV_%'] = output['REV_XML'] / output['REV_JUYO'] * 100
@@ -136,7 +141,7 @@ def run_check():
 
             source = pd.DataFrame({
                 'difference OTB': output['OTB_DIFF'],
-                'date': output['date'],
+                'date': output[f'{type_path[0]}'],
                 'mean': output['OTB_%']
                 })
         
@@ -161,6 +166,9 @@ def run_check():
 
             output.loc[:, "REV_DIFF"] = output["REV_DIFF"].map('{:.2f}'.format)
             output.loc[:, "REV_XML"] = output["REV_XML"].map('{:.2f}'.format)
+
+            if type_juyo:
+                output.rename(columns={f'{type_path[0]}': 'date'}, inplace=True)
 
             output
 
@@ -225,17 +233,23 @@ with st.container():
     left_column, right_column = st.columns(2)
 
     with left_column:
+        # //TODO upload hotel segment performance:
 
-        st.header("Exploration By Day")
-        st.checkbox('Upload different file?', disabled=disabled)
+        st.header("JUYO File")
+        type_juyo = st.checkbox('Upload Hotel Segment Performance by day file?')
 
-        uploaded_file_JUYO = st.file_uploader("Upload JUYO file", type=".xlsx")
+        if type_juyo:
+            type_name = 'Hotel Segment Performance by day'
+            uploaded_file_JUYO = st.file_uploader("Upload Hotel Segment Performance by day", type=".xlsx")
+        else:
+            type_name = 'Exploration by Day'
+            uploaded_file_JUYO = st.file_uploader("Upload Exploration by day", type=".xlsx")
 
         if uploaded_file_JUYO:
             
             JUYO_DF = pd.read_excel(uploaded_file_JUYO)
             
-            st.markdown("### Data preview; Exploration by Day")
+            st.markdown(f"### Data preview; {type_name}")
             
             st.dataframe(JUYO_DF.head())
         
@@ -263,10 +277,15 @@ with st.container():
 
         st.write("---")
 
-        obj_string = JUYO_DF['date'].iloc[-1]
+        if type_juyo:
+            date_time_obj1 = JUYO_DF['category'][0]
+            date_time_obj2 = JUYO_DF['category'].iloc[-1]
+        else:
+            obj_string = JUYO_DF['date'].iloc[-1]
+            date_time_obj1 = datetime.datetime.strptime(JUYO_DF['date'][0], '%Y-%m-%d')
+            date_time_obj2 = datetime.datetime.strptime(obj_string, '%Y-%m-%d')
+
         date_time_obj = datetime.datetime.strptime(XML_DF['CONSIDERED_DATE'][0], '%d-%b-%y')    
-        date_time_obj1 = datetime.datetime.strptime(JUYO_DF['date'][0], '%Y-%m-%d')
-        date_time_obj2 = datetime.datetime.strptime(obj_string, '%Y-%m-%d')
         
         date_JUYO = date_time_obj1.date()
         date_XML = date_time_obj.date()
